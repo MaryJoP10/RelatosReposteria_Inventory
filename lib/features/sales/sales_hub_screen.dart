@@ -14,21 +14,15 @@ class SalesHubScreen extends StatelessWidget {
       actions: [
         HubAction(
           title: 'Nueva venta',
-          subtitle: 'Registrar un pedido o mostrador',
+          subtitle: 'Registrar salida de productos',
           icon: Icons.point_of_sale_outlined,
-          builder: (_) => const SaleFormScreen(),
+          builder: (_) => const QuickSalesScreen(),
         ),
         HubAction(
           title: 'Historial de ventas',
           subtitle: 'Consultar movimientos recientes',
           icon: Icons.receipt_long_outlined,
           builder: (_) => const SalesScreen(),
-        ),
-        HubAction(
-          title: 'Catálogo de Productos',
-          subtitle: 'Gestionar productos y precios',
-          icon: Icons.cake_outlined,
-          builder: (_) => const ProductsScreen(),
         ),
       ],
     );
