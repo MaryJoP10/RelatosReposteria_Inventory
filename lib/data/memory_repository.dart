@@ -88,11 +88,9 @@ class MemoryRelatosRepository implements RelatosRepository {
       notes: notes,
     );
     _purchases.add(purchase);
-    final unitCost = quantity == 0 ? ingredient.unitCost : totalCost / quantity;
     _replaceIngredient(
       ingredient.copyWith(
         quantity: ingredient.quantity + quantity,
-        unitCost: unitCost,
       ),
     );
     return purchase;
@@ -155,7 +153,13 @@ class MemoryRelatosRepository implements RelatosRepository {
     final units = recipe.yieldQuantity * batches;
     final product = _productByName(recipe.name) ??
         await upsertProduct(
-          Product(id: 0, name: recipe.name, unit: recipe.yieldUnit, quantity: 0),
+          Product(
+            id: 0,
+            name: recipe.name,
+            unit: recipe.yieldUnit,
+            quantity: 0,
+            price: 0,
+          ),
         );
     _replaceProduct(product.copyWith(quantity: product.quantity + units));
 
@@ -237,12 +241,12 @@ class MemoryRelatosRepository implements RelatosRepository {
   @override
   Future<DashboardSnapshot> dashboard() async {
     return DashboardSnapshot(
-      salesTotal: _sales.fold(0, (sum, item) => sum + item.total),
-      expensesTotal: _expenses.fold(0, (sum, item) => sum + item.amount) +
-          _purchases.fold(0, (sum, item) => sum + item.totalCost),
+      salesTotal: _sales.fold(0.0, (sum, item) => sum + item.total),
+      expensesTotal: _expenses.fold(0.0, (sum, item) => sum + item.amount) +
+          _purchases.fold(0.0, (sum, item) => sum + item.totalCost),
       ingredientsCount: _ingredients.length,
       finishedProductUnits:
-          _products.fold(0, (sum, item) => sum + item.quantity),
+          _products.fold(0.0, (sum, item) => sum + item.quantity),
       recentProductions: _productions.reversed.take(5).toList(),
       lowStock: _ingredients.where((item) => item.isLow).toList(),
     );

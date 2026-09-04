@@ -54,7 +54,8 @@ class _AdjustmentFormScreenState extends State<AdjustmentFormScreen> {
   @override
   Widget build(BuildContext context) {
     final store = RelatosScope.of(context);
-    final items = _target == 'ingredient' ? store.ingredients : store.products;
+    final List<dynamic> items =
+        _target == 'ingredient' ? store.ingredients : store.products;
     return RelatosFormPage(
       title: 'Nuevo ajuste',
       onSave: _save,
@@ -64,7 +65,8 @@ class _AdjustmentFormScreenState extends State<AdjustmentFormScreen> {
           decoration: const InputDecoration(labelText: 'Inventario'),
           items: const [
             DropdownMenuItem(value: 'ingredient', child: Text('Ingrediente')),
-            DropdownMenuItem(value: 'product', child: Text('Producto terminado')),
+            DropdownMenuItem(
+                value: 'product', child: Text('Producto terminado')),
           ],
           onChanged: (value) {
             setState(() {
@@ -80,12 +82,8 @@ class _AdjustmentFormScreenState extends State<AdjustmentFormScreen> {
           items: [
             for (final item in items)
               DropdownMenuItem(
-                value: item.id,
-                child: Text(
-                  item is dynamic && item.name is String
-                      ? item.name as String
-                      : '${item.id}',
-                ),
+                value: item.id as int,
+                child: Text(item.name as String),
               ),
           ],
           onChanged: (value) => setState(() => _itemId = value),

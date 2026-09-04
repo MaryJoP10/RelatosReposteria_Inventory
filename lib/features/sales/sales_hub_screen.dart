@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/feature_hub.dart';
+import '../inventory/products_screen.dart';
 import 'sales_screen.dart';
 
 class SalesHubScreen extends StatelessWidget {
@@ -22,6 +23,12 @@ class SalesHubScreen extends StatelessWidget {
           subtitle: 'Consultar movimientos recientes',
           icon: Icons.receipt_long_outlined,
           builder: (_) => const SalesScreen(),
+        ),
+        HubAction(
+          title: 'Catálogo de Productos',
+          subtitle: 'Gestionar productos y precios',
+          icon: Icons.cake_outlined,
+          builder: (_) => const ProductsScreen(),
         ),
       ],
     );

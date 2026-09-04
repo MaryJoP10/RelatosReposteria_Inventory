@@ -7,8 +7,7 @@ import 'data/sqlite_repository.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  final repository = SqliteRelatosRepository();
-  await repository.init();
+  final repository = await SqliteRelatosRepository.open();
   final store = RelatosStore(repository);
   await store.load();
 

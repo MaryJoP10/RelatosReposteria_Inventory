@@ -21,8 +21,8 @@ class InventoryHubScreen extends StatelessWidget {
           builder: (_) => const IngredientsScreen(),
         ),
         HubAction(
-          title: 'Productos terminados',
-          subtitle: 'Stock listo para la venta',
+          title: 'Productos y Precios',
+          subtitle: 'Catálogo, precios de venta y stock',
           icon: Icons.cake_outlined,
           builder: (_) => const ProductsScreen(),
         ),

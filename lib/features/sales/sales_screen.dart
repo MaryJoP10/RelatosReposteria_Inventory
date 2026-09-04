@@ -56,7 +56,24 @@ class _SaleFormScreenState extends State<SaleFormScreen> {
   final _total = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _quantity.addListener(_updateTotal);
+  }
+
+  void _updateTotal() {
+    final qty = parseDecimal(_quantity.text);
+    if (_selectedProduct != null && qty != null) {
+      final total = qty * _selectedProduct!.price;
+      _total.text = total == total.roundToDouble()
+          ? total.round().toString()
+          : total.toStringAsFixed(2);
+    }
+  }
+
+  @override
   void dispose() {
+    _quantity.removeListener(_updateTotal);
     _quantity.dispose();
     _total.dispose();
     super.dispose();
@@ -76,7 +93,12 @@ class _SaleFormScreenState extends State<SaleFormScreen> {
             for (final product in store.products)
               DropdownMenuItem(value: product, child: Text(product.name)),
           ],
-          onChanged: (value) => setState(() => _selectedProduct = value),
+          onChanged: (value) {
+            setState(() {
+              _selectedProduct = value;
+              _updateTotal();
+            });
+          },
         ),
         const SizedBox(height: 12),
         TextField(

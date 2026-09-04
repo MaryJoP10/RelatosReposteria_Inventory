@@ -25,7 +25,7 @@ class ProductsScreen extends StatelessWidget {
         final item = store.products[index];
         return AppListTile(
           title: item.name,
-          subtitle: formatQuantity(item.quantity, item.unit),
+          subtitle: '${formatQuantity(item.quantity, item.unit)} · ${formatMoney(item.price)}',
           leadingIcon: Icons.cake_outlined,
           onTap: () => _openForm(context, item: item),
         );
@@ -52,6 +52,7 @@ class ProductFormScreen extends StatefulWidget {
 class _ProductFormScreenState extends State<ProductFormScreen> {
   final _name = TextEditingController();
   final _quantity = TextEditingController(text: '0');
+  final _price = TextEditingController(text: '0');
   String _unit = 'unidades';
 
   @override
@@ -60,17 +61,20 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     final item = widget.product;
     if (item != null) {
       _name.text = item.name;
-      _quantity.text = item.quantity.round() == item.quantity
-          ? item.quantity.round().toString()
-          : item.quantity.toString();
+      _quantity.text = _formatValue(item.quantity);
       _unit = item.unit;
+      _price.text = _formatValue(item.price);
     }
   }
+
+  String _formatValue(double value) =>
+      value.round() == value ? value.round().toString() : value.toString();
 
   @override
   void dispose() {
     _name.dispose();
     _quantity.dispose();
+    _price.dispose();
     super.dispose();
   }
 
@@ -101,6 +105,12 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: const InputDecoration(labelText: 'Cantidad disponible'),
         ),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _price,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(labelText: 'Precio de venta'),
+        ),
       ],
     );
   }
@@ -108,8 +118,10 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
   Future<void> _save() async {
     final name = _name.text.trim();
     final quantity = parseDecimal(_quantity.text);
-    if (name.isEmpty || quantity == null) {
-      await showRelatosError(context, RelatosException('Completa todos los campos.'));
+    final price = parseDecimal(_price.text);
+    if (name.isEmpty || quantity == null || price == null) {
+      await showRelatosError(
+          context, RelatosException('Completa todos los campos.'));
       return;
     }
     final store = RelatosScope.of(context);
@@ -120,6 +132,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           name: name,
           unit: _unit,
           quantity: quantity,
+          price: price,
         ),
       );
       await store.load();

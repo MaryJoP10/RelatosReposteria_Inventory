@@ -58,7 +58,6 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
   final _name = TextEditingController();
   final _quantity = TextEditingController(text: '0');
   final _minQuantity = TextEditingController(text: '0');
-  final _unitCost = TextEditingController(text: '0');
   String _unit = 'kg';
 
   @override
@@ -69,7 +68,6 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
       _name.text = item.name;
       _quantity.text = _n(item.quantity);
       _minQuantity.text = _n(item.minQuantity);
-      _unitCost.text = _n(item.unitCost);
       _unit = item.unit;
     }
   }
@@ -79,7 +77,6 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     _name.dispose();
     _quantity.dispose();
     _minQuantity.dispose();
-    _unitCost.dispose();
     super.dispose();
   }
 
@@ -116,12 +113,6 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
           keyboardType: const TextInputType.numberWithOptions(decimal: true),
           decoration: const InputDecoration(labelText: 'Mínimo para alerta'),
         ),
-        const SizedBox(height: 12),
-        TextField(
-          controller: _unitCost,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          decoration: const InputDecoration(labelText: 'Costo por unidad'),
-        ),
       ],
     );
   }
@@ -130,8 +121,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     final name = _name.text.trim();
     final quantity = parseDecimal(_quantity.text);
     final minQuantity = parseDecimal(_minQuantity.text);
-    final unitCost = parseDecimal(_unitCost.text);
-    if (name.isEmpty || quantity == null || minQuantity == null || unitCost == null) {
+    if (name.isEmpty || quantity == null || minQuantity == null) {
       await showRelatosError(context, RelatosException('Completa todos los campos.'));
       return;
     }
@@ -144,7 +134,6 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
           unit: _unit,
           quantity: quantity,
           minQuantity: minQuantity,
-          unitCost: unitCost,
         ),
       );
       await store.load();

@@ -18,7 +18,13 @@ class SqliteRelatosRepository implements RelatosRepository {
   static Future<SqliteRelatosRepository> open() async {
     final db = await openDatabase(
       p.join(await getDatabasesPath(), 'relatos.db'),
-      version: 1,
+      version: 2,
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute(
+              'ALTER TABLE products ADD COLUMN price REAL NOT NULL DEFAULT 0');
+        }
+      },
       onCreate: (db, version) async {
         await db.execute('''
           CREATE TABLE ingredients (
@@ -35,7 +41,8 @@ class SqliteRelatosRepository implements RelatosRepository {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
             unit TEXT NOT NULL,
-            quantity REAL NOT NULL DEFAULT 0
+            quantity REAL NOT NULL DEFAULT 0,
+            price REAL NOT NULL DEFAULT 0
           )
         ''');
         await db.execute('''
@@ -115,7 +122,6 @@ class SqliteRelatosRepository implements RelatosRepository {
       'unit': ingredient.unit,
       'quantity': ingredient.quantity,
       'minQuantity': ingredient.minQuantity,
-      'unitCost': ingredient.unitCost,
     };
     if (ingredient.id == 0) {
       final id = await _db.insert('ingredients', values);
@@ -147,6 +153,7 @@ class SqliteRelatosRepository implements RelatosRepository {
       'name': product.name,
       'unit': product.unit,
       'quantity': product.quantity,
+      'price': product.price,
     };
     if (product.id == 0) {
       final id = await _db.insert('products', values);
@@ -197,12 +204,10 @@ class SqliteRelatosRepository implements RelatosRepository {
         'purchasedAt': at.toIso8601String(),
         'notes': notes,
       });
-      final unitCost = quantity == 0 ? ingredient.unitCost : totalCost / quantity;
       await txn.update(
         'ingredients',
         {
           'quantity': ingredient.quantity + quantity,
-          'unitCost': unitCost,
         },
         where: 'id = ?',
         whereArgs: [ingredientId],
@@ -489,7 +494,6 @@ class SqliteRelatosRepository implements RelatosRepository {
       unit: row['unit'] as String,
       quantity: (row['quantity'] as num).toDouble(),
       minQuantity: (row['minQuantity'] as num).toDouble(),
-      unitCost: (row['unitCost'] as num).toDouble(),
     );
   }
 
@@ -499,6 +503,7 @@ class SqliteRelatosRepository implements RelatosRepository {
       name: row['name'] as String,
       unit: row['unit'] as String,
       quantity: (row['quantity'] as num).toDouble(),
+      price: (row['price'] as num?)?.toDouble() ?? 0.0,
     );
   }
 

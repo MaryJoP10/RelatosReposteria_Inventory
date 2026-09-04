@@ -5,7 +5,6 @@ class Ingredient {
     required this.unit,
     required this.quantity,
     required this.minQuantity,
-    required this.unitCost,
   });
 
   final int id;
@@ -13,7 +12,6 @@ class Ingredient {
   final String unit;
   final double quantity;
   final double minQuantity;
-  final double unitCost;
 
   bool get isLow => quantity <= minQuantity;
 
@@ -23,7 +21,6 @@ class Ingredient {
     String? unit,
     double? quantity,
     double? minQuantity,
-    double? unitCost,
   }) {
     return Ingredient(
       id: id ?? this.id,
@@ -31,7 +28,6 @@ class Ingredient {
       unit: unit ?? this.unit,
       quantity: quantity ?? this.quantity,
       minQuantity: minQuantity ?? this.minQuantity,
-      unitCost: unitCost ?? this.unitCost,
     );
   }
 }
@@ -42,19 +38,28 @@ class Product {
     required this.name,
     required this.unit,
     required this.quantity,
+    this.price = 0,
   });
 
   final int id;
   final String name;
   final String unit;
   final double quantity;
+  final double price;
 
-  Product copyWith({int? id, String? name, String? unit, double? quantity}) {
+  Product copyWith({
+    int? id,
+    String? name,
+    String? unit,
+    double? quantity,
+    double? price,
+  }) {
     return Product(
       id: id ?? this.id,
       name: name ?? this.name,
       unit: unit ?? this.unit,
       quantity: quantity ?? this.quantity,
+      price: price ?? this.price,
     );
   }
 }
