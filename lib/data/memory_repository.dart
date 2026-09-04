@@ -122,6 +122,18 @@ class MemoryRelatosRepository implements RelatosRepository {
   }
 
   @override
+  Future<void> deletePurchase(int id) async {
+    final index = _purchases.indexWhere((item) => item.id == id);
+    if (index >= 0) {
+      final purchase = _purchases[index];
+      final ingredient = _ingredient(purchase.ingredientId);
+      _replaceIngredient(
+          ingredient.copyWith(quantity: ingredient.quantity - purchase.quantity));
+      _purchases.removeAt(index);
+    }
+  }
+
+  @override
   Future<void> deleteRecipe(int id) async {
     _recipes.removeWhere((item) => item.id == id);
   }
@@ -202,6 +214,18 @@ class MemoryRelatosRepository implements RelatosRepository {
   }
 
   @override
+  Future<void> deleteSale(int id) async {
+    final index = _sales.indexWhere((item) => item.id == id);
+    if (index >= 0) {
+      final sale = _sales[index];
+      final product = _product(sale.productId);
+      _replaceProduct(
+          product.copyWith(quantity: product.quantity + sale.quantity));
+      _sales.removeAt(index);
+    }
+  }
+
+  @override
   Future<List<Expense>> expenses() async => List.unmodifiable(_expenses.reversed);
 
   @override
@@ -223,19 +247,8 @@ class MemoryRelatosRepository implements RelatosRepository {
   }
 
   @override
-  Future<void> addAdjustment({
-    required String target,
-    required int itemId,
-    required double delta,
-    String? reason,
-  }) async {
-    if (target == 'ingredient') {
-      final item = _ingredient(itemId);
-      _replaceIngredient(item.copyWith(quantity: item.quantity + delta));
-      return;
-    }
-    final item = _product(itemId);
-    _replaceProduct(item.copyWith(quantity: item.quantity + delta));
+  Future<void> deleteExpense(int id) async {
+    _expenses.removeWhere((item) => item.id == id);
   }
 
   @override

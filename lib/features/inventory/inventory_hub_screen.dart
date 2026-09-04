@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/feature_hub.dart';
-import 'adjustments_screen.dart';
 import 'ingredients_screen.dart';
 import 'products_screen.dart';
 import 'purchases_screen.dart';
@@ -31,12 +30,6 @@ class InventoryHubScreen extends StatelessWidget {
           subtitle: 'Ingresos de insumos al inventario',
           icon: Icons.shopping_bag_outlined,
           builder: (_) => const PurchasesScreen(),
-        ),
-        HubAction(
-          title: 'Ajustes',
-          subtitle: 'Correcciones de stock y merma',
-          icon: Icons.tune_outlined,
-          builder: (_) => const AdjustmentsScreen(),
         ),
       ],
     );

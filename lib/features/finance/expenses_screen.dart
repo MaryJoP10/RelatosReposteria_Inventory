@@ -46,6 +46,7 @@ class ExpensesScreen extends StatelessWidget {
               item.spentAt.toString().substring(0, 10),
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            onTap: () => _confirmDelete(context, item),
           );
         } else {
           final purchase = item as Purchase;
@@ -58,9 +59,48 @@ class ExpensesScreen extends StatelessWidget {
               purchase.purchasedAt.toString().substring(0, 10),
               style: Theme.of(context).textTheme.bodySmall,
             ),
+            onTap: () => _confirmDelete(context, purchase),
           );
         }
       },
+    );
+  }
+
+  void _confirmDelete(BuildContext context, dynamic item) {
+    final isExpense = item is Expense;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(isExpense ? '¿Eliminar gasto?' : '¿Eliminar compra?'),
+        content: Text(isExpense
+            ? 'Esta acción quitará el gasto de las finanzas.'
+            : 'Se descontará la cantidad del inventario y el gasto de las finanzas.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final store = RelatosScope.of(context);
+              try {
+                if (isExpense) {
+                  await store.repository.deleteExpense(item.id);
+                } else {
+                  await store.repository.deletePurchase(item.id);
+                }
+                await store.load();
+              } catch (error) {
+                if (context.mounted) await showRelatosError(context, error);
+              }
+            },
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
     );
   }
 }

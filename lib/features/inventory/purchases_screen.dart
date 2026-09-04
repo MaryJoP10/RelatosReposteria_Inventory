@@ -30,8 +30,41 @@ class PurchasesScreen extends StatelessWidget {
           subtitle:
               '${formatQuantity(item.quantity, ingredient?.unit ?? '')} · ${formatMoney(item.totalCost)}',
           leadingIcon: Icons.shopping_bag_outlined,
+          onTap: () => _confirmDelete(context, item.id),
         );
       },
+    );
+  }
+
+  void _confirmDelete(BuildContext context, int id) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Eliminar compra?'),
+        content: const Text(
+            'Se descontará la cantidad del inventario y el gasto de las finanzas.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final store = RelatosScope.of(context);
+              try {
+                await store.repository.deletePurchase(id);
+                await store.load();
+              } catch (error) {
+                if (context.mounted) await showRelatosError(context, error);
+              }
+            },
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
     );
   }
 }

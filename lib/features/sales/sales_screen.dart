@@ -32,8 +32,41 @@ class SalesScreen extends StatelessWidget {
             item.soldAt.toString().substring(0, 10),
             style: Theme.of(context).textTheme.bodySmall,
           ),
+          onTap: () => _confirmDelete(context, item.id),
         );
       },
+    );
+  }
+
+  void _confirmDelete(BuildContext context, int id) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Eliminar venta?'),
+        content: const Text(
+            'Se devolverá el stock al inventario y se quitará de los ingresos.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              final store = RelatosScope.of(context);
+              try {
+                await store.repository.deleteSale(id);
+                await store.load();
+              } catch (error) {
+                if (context.mounted) await showRelatosError(context, error);
+              }
+            },
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
+            child: const Text('Eliminar'),
+          ),
+        ],
+      ),
     );
   }
 }

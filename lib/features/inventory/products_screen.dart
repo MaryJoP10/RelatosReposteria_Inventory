@@ -83,6 +83,7 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
     return RelatosFormPage(
       title: widget.product == null ? 'Nuevo producto' : 'Editar producto',
       onSave: _save,
+      onDelete: widget.product == null ? null : _delete,
       children: [
         TextField(
           controller: _name,
@@ -135,6 +136,17 @@ class _ProductFormScreenState extends State<ProductFormScreen> {
           price: price,
         ),
       );
+      await store.load();
+      if (mounted) Navigator.pop(context);
+    } catch (error) {
+      if (mounted) await showRelatosError(context, error);
+    }
+  }
+
+  Future<void> _delete() async {
+    final store = RelatosScope.of(context);
+    try {
+      await store.repository.deleteProduct(widget.product!.id);
       await store.load();
       if (mounted) Navigator.pop(context);
     } catch (error) {

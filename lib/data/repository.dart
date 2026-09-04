@@ -17,6 +17,7 @@ abstract class RelatosRepository {
     String? notes,
     DateTime? purchasedAt,
   });
+  Future<void> deletePurchase(int id);
 
   Future<List<Recipe>> recipes();
   Future<Recipe> upsertRecipe(Recipe recipe);
@@ -36,6 +37,7 @@ abstract class RelatosRepository {
     required double total,
     DateTime? soldAt,
   });
+  Future<void> deleteSale(int id);
 
   Future<List<Expense>> expenses();
   Future<Expense> addExpense({
@@ -44,13 +46,7 @@ abstract class RelatosRepository {
     String? category,
     DateTime? spentAt,
   });
-
-  Future<void> addAdjustment({
-    required String target,
-    required int itemId,
-    required double delta,
-    String? reason,
-  });
+  Future<void> deleteExpense(int id);
 
   Future<DashboardSnapshot> dashboard();
 }

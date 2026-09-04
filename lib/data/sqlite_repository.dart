@@ -224,6 +224,30 @@ class SqliteRelatosRepository implements RelatosRepository {
   }
 
   @override
+  Future<void> deletePurchase(int id) async {
+    await _db.transaction((txn) async {
+      final rows = await txn.query('purchases', where: 'id = ?', whereArgs: [id]);
+      if (rows.isEmpty) return;
+      final purchase = rows.first;
+      final ingredientId = purchase['ingredientId'] as int;
+      final quantity = (purchase['quantity'] as num).toDouble();
+
+      final ingredientRows = await txn
+          .query('ingredients', where: 'id = ?', whereArgs: [ingredientId]);
+      if (ingredientRows.isNotEmpty) {
+        final ingredient = _ingredientFrom(ingredientRows.first);
+        await txn.update(
+          'ingredients',
+          {'quantity': ingredient.quantity - quantity},
+          where: 'id = ?',
+          whereArgs: [ingredientId],
+        );
+      }
+      await txn.delete('purchases', where: 'id = ?', whereArgs: [id]);
+    });
+  }
+
+  @override
   Future<List<Recipe>> recipes() async {
     final rows = await _db.query('recipes', orderBy: 'name COLLATE NOCASE');
     final result = <Recipe>[];
@@ -369,7 +393,8 @@ class SqliteRelatosRepository implements RelatosRepository {
     return _db.transaction((txn) async {
       final product = await _productById(txn, productId);
       if (product.quantity + 0.0001 < quantity) {
-        throw RelatosException('No hay suficiente ${product.name} para vender.');
+        throw RelatosException(
+            'No hay suficiente ${product.name} para vender.');
       }
       await txn.update(
         'products',
@@ -393,6 +418,30 @@ class SqliteRelatosRepository implements RelatosRepository {
         total: total,
         soldAt: at,
       );
+    });
+  }
+
+  @override
+  Future<void> deleteSale(int id) async {
+    await _db.transaction((txn) async {
+      final rows = await txn.query('sales', where: 'id = ?', whereArgs: [id]);
+      if (rows.isEmpty) return;
+      final sale = rows.first;
+      final productId = sale['productId'] as int;
+      final quantity = (sale['quantity'] as num).toDouble();
+
+      final productRows = await txn
+          .query('products', where: 'id = ?', whereArgs: [productId]);
+      if (productRows.isNotEmpty) {
+        final product = _productFrom(productRows.first);
+        await txn.update(
+          'products',
+          {'quantity': product.quantity + quantity},
+          where: 'id = ?',
+          whereArgs: [productId],
+        );
+      }
+      await txn.delete('sales', where: 'id = ?', whereArgs: [id]);
     });
   }
 
@@ -432,31 +481,8 @@ class SqliteRelatosRepository implements RelatosRepository {
   }
 
   @override
-  Future<void> addAdjustment({
-    required String target,
-    required int itemId,
-    required double delta,
-    String? reason,
-  }) async {
-    await _db.transaction((txn) async {
-      if (target == 'ingredient') {
-        final item = await _ingredientById(txn, itemId);
-        await txn.update(
-          'ingredients',
-          {'quantity': item.quantity + delta},
-          where: 'id = ?',
-          whereArgs: [itemId],
-        );
-      } else {
-        final item = await _productById(txn, itemId);
-        await txn.update(
-          'products',
-          {'quantity': item.quantity + delta},
-          where: 'id = ?',
-          whereArgs: [itemId],
-        );
-      }
-    });
+  Future<void> deleteExpense(int id) async {
+    await _db.delete('expenses', where: 'id = ?', whereArgs: [id]);
   }
 
   @override

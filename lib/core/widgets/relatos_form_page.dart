@@ -26,11 +26,13 @@ class RelatosFormPage extends StatelessWidget {
     super.key,
     required this.title,
     required this.onSave,
+    this.onDelete,
     required this.children,
   });
 
   final String title;
   final VoidCallback onSave;
+  final VoidCallback? onDelete;
   final List<Widget> children;
 
   @override
@@ -47,9 +49,51 @@ class RelatosFormPage extends StatelessWidget {
         children: [
           ...children,
           const SizedBox(height: RelatosSpacing.xl),
-          FilledButton(
-            onPressed: onSave,
-            child: const Text('Guardar'),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: onSave,
+              child: const Text('Guardar'),
+            ),
+          ),
+          if (onDelete != null) ...[
+            const SizedBox(height: 12),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton(
+                onPressed: () => _confirmDelete(context),
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Theme.of(context).colorScheme.error,
+                  side: BorderSide(color: Theme.of(context).colorScheme.error),
+                ),
+                child: const Text('Eliminar registro'),
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('¿Eliminar?'),
+        content: const Text('Esta acción no se puede deshacer.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              onDelete?.call();
+            },
+            style: TextButton.styleFrom(
+                foregroundColor: Theme.of(context).colorScheme.error),
+            child: const Text('Eliminar'),
           ),
         ],
       ),

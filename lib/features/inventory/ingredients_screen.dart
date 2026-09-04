@@ -85,6 +85,7 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
     return RelatosFormPage(
       title: widget.ingredient == null ? 'Nuevo ingrediente' : 'Editar ingrediente',
       onSave: _save,
+      onDelete: widget.ingredient == null ? null : _delete,
       children: [
         TextField(
           controller: _name,
@@ -136,6 +137,17 @@ class _IngredientFormScreenState extends State<IngredientFormScreen> {
           minQuantity: minQuantity,
         ),
       );
+      await store.load();
+      if (mounted) Navigator.pop(context);
+    } catch (error) {
+      if (mounted) await showRelatosError(context, error);
+    }
+  }
+
+  Future<void> _delete() async {
+    final store = RelatosScope.of(context);
+    try {
+      await store.repository.deleteIngredient(widget.ingredient!.id);
       await store.load();
       if (mounted) Navigator.pop(context);
     } catch (error) {
