@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/feature_hub.dart';
 import '../sales/sales_screen.dart';
 import 'expenses_screen.dart';
+import 'profits_screen.dart';
 import 'reports_screen.dart';
 
 class FinanceHubScreen extends StatelessWidget {
@@ -27,13 +28,13 @@ class FinanceHubScreen extends StatelessWidget {
         ),
         HubAction(
           title: 'Ganancias',
-          subtitle: 'Resultado mensual',
+          subtitle: 'Ingresos vs Gastos por mes',
           icon: Icons.trending_up_rounded,
-          builder: (_) => const ReportsScreen(),
+          builder: (_) => const ProfitsScreen(),
         ),
         HubAction(
           title: 'Reportes',
-          subtitle: 'Resúmenes de operación',
+          subtitle: 'Resúmenes de operación detallados',
           icon: Icons.insights_outlined,
           builder: (_) => const ReportsScreen(),
         ),
