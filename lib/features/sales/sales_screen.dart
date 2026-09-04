@@ -4,6 +4,7 @@ import '../../core/format.dart';
 import '../../core/theme/relatos_spacing.dart';
 import '../../core/widgets/app_list_tile.dart';
 import '../../core/widgets/entity_list_scaffold.dart';
+import '../../core/widgets/relatos_form_page.dart';
 import '../../data/memory_repository.dart';
 import '../../data/models.dart';
 import '../../data/relatos_scope.dart';
