@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../core/widgets/feature_hub.dart';
 import '../sales/sales_screen.dart';
 import 'expenses_screen.dart';
+import 'reports_screen.dart';
 
 class FinanceHubScreen extends StatelessWidget {
   const FinanceHubScreen({super.key});
@@ -26,21 +27,15 @@ class FinanceHubScreen extends StatelessWidget {
         ),
         HubAction(
           title: 'Ganancias',
-          subtitle: 'Resultado del período',
+          subtitle: 'Resultado mensual',
           icon: Icons.trending_up_rounded,
-          builder: (_) => const PlaceholderDetailScreen(
-            title: 'Ganancias',
-            description: 'Aquí se verá la ganancia calculada del período.',
-          ),
+          builder: (_) => const ReportsScreen(),
         ),
         HubAction(
           title: 'Reportes',
-          subtitle: 'Resúmenes para la operación',
+          subtitle: 'Resúmenes de operación',
           icon: Icons.insights_outlined,
-          builder: (_) => const PlaceholderDetailScreen(
-            title: 'Reportes',
-            description: 'Aquí se generarán reportes de costos y resultados.',
-          ),
+          builder: (_) => const ReportsScreen(),
         ),
       ],
     );

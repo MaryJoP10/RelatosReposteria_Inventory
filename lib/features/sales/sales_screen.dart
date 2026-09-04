@@ -15,17 +15,17 @@ class SalesScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final store = RelatosScope.of(context);
     return EntityListScaffold(
-      title: 'Ventas',
-      emptyTitle: 'Sin ventas',
-      emptyMessage: 'Registra tus pedidos y ventas aquí.',
+      title: 'Ventas (Ingresos)',
+      emptyTitle: 'Sin ingresos',
+      emptyMessage: 'Las ventas registradas aparecerán aquí.',
       emptyIcon: Icons.receipt_long_outlined,
-      onAdd: () => _openForm(context),
       itemCount: store.sales.length,
       itemBuilder: (context, index) {
         final item = store.sales[index];
         return AppListTile(
           title: item.productName,
-          subtitle: '${formatQuantity(item.quantity, '')} - ${formatMoney(item.total)}',
+          subtitle:
+              '${formatQuantity(item.quantity, '')} - ${formatMoney(item.total)}',
           leadingIcon: Icons.receipt_long_outlined,
           trailing: Text(
             item.soldAt.toString().substring(0, 10),

@@ -7,7 +7,7 @@ class EntityListScaffold extends StatelessWidget {
   const EntityListScaffold({
     super.key,
     required this.title,
-    required this.onAdd,
+    this.onAdd,
     required this.emptyTitle,
     required this.emptyMessage,
     required this.itemCount,
@@ -16,7 +16,7 @@ class EntityListScaffold extends StatelessWidget {
   });
 
   final String title;
-  final VoidCallback onAdd;
+  final VoidCallback? onAdd;
   final String emptyTitle;
   final String emptyMessage;
   final int itemCount;
@@ -27,11 +27,13 @@ class EntityListScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(title)),
-      floatingActionButton: FloatingActionButton(
-        onPressed: onAdd,
-        tooltip: 'Agregar',
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: onAdd == null
+          ? null
+          : FloatingActionButton(
+              onPressed: onAdd,
+              tooltip: 'Agregar',
+              child: const Icon(Icons.add),
+            ),
       body: itemCount == 0
           ? EmptyState(
               title: emptyTitle,

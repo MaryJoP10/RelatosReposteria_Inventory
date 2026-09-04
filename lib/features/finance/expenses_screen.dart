@@ -14,31 +14,53 @@ class ExpensesScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final store = RelatosScope.of(context);
+
+    // Merge manual expenses and ingredient purchases
+    final List<dynamic> allExpenses = [
+      ...store.expenses,
+      ...store.purchases,
+    ];
+
+    // Sort by date descending
+    allExpenses.sort((a, b) {
+      final dateA = a is Expense ? a.spentAt : (a as Purchase).purchasedAt;
+      final dateB = b is Expense ? b.spentAt : (b as Purchase).purchasedAt;
+      return dateB.compareTo(dateA);
+    });
+
     return EntityListScaffold(
       title: 'Gastos',
       emptyTitle: 'Sin gastos',
-      emptyMessage: 'Registra tus gastos operativos aquí.',
+      emptyMessage: 'Las compras y gastos registrados aparecerán aquí.',
       emptyIcon: Icons.north_east,
-      onAdd: () => _openForm(context),
-      itemCount: store.expenses.length,
+      itemCount: allExpenses.length,
       itemBuilder: (context, index) {
-        final item = store.expenses[index];
-        return AppListTile(
-          title: item.description,
-          subtitle: '${item.category ?? 'General'} - ${formatMoney(item.amount)}',
-          leadingIcon: Icons.north_east,
-          trailing: Text(
-            item.spentAt.toString().substring(0, 10),
-            style: Theme.of(context).textTheme.bodySmall,
-          ),
-        );
+        final item = allExpenses[index];
+        if (item is Expense) {
+          return AppListTile(
+            title: item.description,
+            subtitle:
+                '${item.category ?? 'Operación'} - ${formatMoney(item.amount)}',
+            leadingIcon: Icons.payments_outlined,
+            trailing: Text(
+              item.spentAt.toString().substring(0, 10),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          );
+        } else {
+          final purchase = item as Purchase;
+          final ingredient = store.ingredientById(purchase.ingredientId);
+          return AppListTile(
+            title: 'Compra: ${ingredient?.name ?? 'Insumo'}',
+            subtitle: 'Ingrediente - ${formatMoney(purchase.totalCost)}',
+            leadingIcon: Icons.shopping_bag_outlined,
+            trailing: Text(
+              purchase.purchasedAt.toString().substring(0, 10),
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          );
+        }
       },
-    );
-  }
-
-  Future<void> _openForm(BuildContext context) async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => const ExpenseFormScreen()),
     );
   }
 }
