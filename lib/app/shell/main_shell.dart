@@ -92,12 +92,14 @@ class _MainShellState extends State<MainShell> {
         }
 
         return Scaffold(
-          appBar: AppBar(
-            title: const BrandLogo(size: BrandLogoSize.compact),
-          ),
+          appBar: AppBar(title: const BrandLogo(size: BrandLogoSize.compact)),
           body: body,
           bottomNavigationBar: NavigationBar(
             selectedIndex: _index,
+            labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+            labelTextStyle: WidgetStateProperty.all(
+              const TextStyle(fontSize: 11),
+            ),
             destinations: _destinations,
             onDestinationSelected: (value) {
               setState(() => _index = value);
