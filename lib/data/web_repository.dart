@@ -95,6 +95,12 @@ class WebRelatosRepository implements RelatosRepository {
   Future<List<Ingredient>> ingredients() async {
     final rows = _list('ingredients');
 
+    rows.sort(
+      (a, b) => (a['name'] as String).toLowerCase().compareTo(
+        (b['name'] as String).toLowerCase(),
+      ),
+    );
+
     return rows.map((row) {
       return Ingredient(
         id: row['id'] as int,
@@ -153,10 +159,6 @@ class WebRelatosRepository implements RelatosRepository {
 
     _data['ingredients'] = rows;
 
-    final lines = _list('recipe_lines');
-    lines.removeWhere((row) => row['ingredientId'] == id);
-    _data['recipe_lines'] = lines;
-
     await _save();
   }
 
@@ -167,6 +169,12 @@ class WebRelatosRepository implements RelatosRepository {
   @override
   Future<List<Product>> products() async {
     final rows = _list('products');
+
+    rows.sort(
+      (a, b) => (a['name'] as String).toLowerCase().compareTo(
+        (b['name'] as String).toLowerCase(),
+      ),
+    );
 
     return rows.map((row) {
       return Product(
@@ -236,6 +244,10 @@ class WebRelatosRepository implements RelatosRepository {
   @override
   Future<List<Purchase>> purchases() async {
     final rows = _list('purchases');
+
+    rows.sort(
+      (a, b) => _date(b['purchasedAt']).compareTo(_date(a['purchasedAt'])),
+    );
 
     return rows.map((row) {
       return Purchase(
@@ -341,6 +353,12 @@ class WebRelatosRepository implements RelatosRepository {
     final recipes = _list('recipes');
     final lines = _list('recipe_lines');
 
+    recipes.sort(
+      (a, b) => (a['name'] as String).toLowerCase().compareTo(
+        (b['name'] as String).toLowerCase(),
+      ),
+    );
+
     return recipes.map((recipe) {
       final recipeId = recipe['id'] as int;
 
@@ -423,6 +441,7 @@ class WebRelatosRepository implements RelatosRepository {
     final lines = _list('recipe_lines');
 
     recipes.removeWhere((row) => row['id'] == id);
+
     lines.removeWhere((row) => row['recipeId'] == id);
 
     _data['recipes'] = recipes;
@@ -438,6 +457,10 @@ class WebRelatosRepository implements RelatosRepository {
   @override
   Future<List<Production>> productions() async {
     final rows = _list('productions');
+
+    rows.sort(
+      (a, b) => _date(b['producedAt']).compareTo(_date(a['producedAt'])),
+    );
 
     return rows.map((row) {
       return Production(
@@ -456,10 +479,6 @@ class WebRelatosRepository implements RelatosRepository {
     required double batches,
     DateTime? producedAt,
   }) async {
-    if (batches <= 0) {
-      throw Exception('La cantidad de producción debe ser mayor a 0.');
-    }
-
     final recipes = _list('recipes');
 
     final recipeIndex = recipes.indexWhere((row) => row['id'] == recipeId);
@@ -478,7 +497,10 @@ class WebRelatosRepository implements RelatosRepository {
 
     final ingredients = _list('ingredients');
 
-    // Primero comprobamos que haya suficiente materia prima.
+    // ------------------------------------------------------------
+    // 1. Comprobar toda la materia prima antes de descontar nada.
+    // ------------------------------------------------------------
+
     for (final line in recipeLines) {
       final ingredientId = line['ingredientId'] as int;
 
@@ -495,14 +517,18 @@ class WebRelatosRepository implements RelatosRepository {
       final availableQuantity =
           (ingredients[ingredientIndex]['quantity'] as num).toDouble();
 
-      if (availableQuantity < requiredQuantity) {
+      // Misma tolerancia utilizada por SQLite.
+      if (availableQuantity + 0.0001 < requiredQuantity) {
         throw Exception(
           'No hay suficiente ${ingredients[ingredientIndex]['name']}.',
         );
       }
     }
 
-    // Ahora sí descontamos ingredientes.
+    // ------------------------------------------------------------
+    // 2. Descontar ingredientes.
+    // ------------------------------------------------------------
+
     for (final line in recipeLines) {
       final ingredientId = line['ingredientId'] as int;
 
@@ -517,22 +543,49 @@ class WebRelatosRepository implements RelatosRepository {
           requiredQuantity;
     }
 
+    // ------------------------------------------------------------
+    // 3. Añadir producto terminado.
+    //
+    // IMPORTANTE:
+    // Buscamos el producto ignorando mayúsculas/minúsculas,
+    // igual que SQLite con LOWER(name).
+    // ------------------------------------------------------------
+
     final products = _list('products');
 
     final recipeName = recipe['name'] as String;
+    final recipeNameNormalized = recipeName.trim().toLowerCase();
+
     final yieldQuantity = (recipe['yieldQuantity'] as num).toDouble();
 
     final unitsProduced = yieldQuantity * batches;
 
     final productIndex = products.indexWhere(
-      (product) => product['name'] == recipeName,
+      (product) =>
+          (product['name'] as String).trim().toLowerCase() ==
+          recipeNameNormalized,
     );
 
     if (productIndex >= 0) {
+      // EL PRODUCTO YA EXISTE.
+      //
+      // Conservamos absolutamente todo lo que ya tenía:
+      // - id
+      // - nombre
+      // - unidad
+      // - precio
+      //
+      // Solamente aumentamos el stock.
+
       products[productIndex]['quantity'] =
           (products[productIndex]['quantity'] as num).toDouble() +
           unitsProduced;
     } else {
+      // EL PRODUCTO NO EXISTE.
+      //
+      // En este caso sí se crea automáticamente con precio 0.
+      // Después el usuario puede asignarle su precio.
+
       products.add({
         'id': _nextId('products'),
         'name': recipeName,
@@ -541,6 +594,10 @@ class WebRelatosRepository implements RelatosRepository {
         'price': 0.0,
       });
     }
+
+    // ------------------------------------------------------------
+    // 4. Registrar producción.
+    // ------------------------------------------------------------
 
     final production = Production(
       id: _nextId('productions'),
@@ -577,6 +634,8 @@ class WebRelatosRepository implements RelatosRepository {
   Future<List<Sale>> sales() async {
     final rows = _list('sales');
 
+    rows.sort((a, b) => _date(b['soldAt']).compareTo(_date(a['soldAt'])));
+
     return rows.map((row) {
       return Sale(
         id: row['id'] as int,
@@ -596,10 +655,6 @@ class WebRelatosRepository implements RelatosRepository {
     required double total,
     DateTime? soldAt,
   }) async {
-    if (quantity <= 0) {
-      throw Exception('La cantidad debe ser mayor a 0.');
-    }
-
     final products = _list('products');
 
     final productIndex = products.indexWhere((row) => row['id'] == productId);
@@ -612,7 +667,8 @@ class WebRelatosRepository implements RelatosRepository {
 
     final available = (product['quantity'] as num).toDouble();
 
-    if (available < quantity) {
+    // Misma tolerancia utilizada por SQLite.
+    if (available + 0.0001 < quantity) {
       throw Exception('No hay suficiente producto disponible.');
     }
 
@@ -749,15 +805,14 @@ class WebRelatosRepository implements RelatosRepository {
     final sales = _list('sales');
     final expenses = _list('expenses');
     final purchases = _list('purchases');
-    final ingredients = _list('ingredients');
-    final products = _list('products');
-    final productions = _list('productions');
 
     final salesTotal = sales.fold<double>(
       0,
       (sum, row) => sum + (row['total'] as num).toDouble(),
     );
 
+    // Igual que SQLite:
+    // gastos registrados + compras de ingredientes.
     final expensesTotal =
         expenses.fold<double>(
           0,
@@ -768,44 +823,25 @@ class WebRelatosRepository implements RelatosRepository {
           (sum, row) => sum + (row['totalCost'] as num).toDouble(),
         );
 
-    final finishedProductUnits = products.fold<double>(
-      0,
-      (sum, row) => sum + (row['quantity'] as num).toDouble(),
-    );
+    final allIngredients = await ingredients();
+    final allProducts = await products();
+    final recentProductions = await productions();
 
-    final lowStock = ingredients
-        .map(
-          (row) => Ingredient(
-            id: row['id'] as int,
-            name: row['name'] as String,
-            unit: row['unit'] as String,
-            quantity: (row['quantity'] as num).toDouble(),
-            minQuantity: (row['minQuantity'] as num).toDouble(),
-          ),
-        )
+    final lowStock = allIngredients
         .where((ingredient) => ingredient.isLow)
         .toList();
 
-    final productionList = productions
-        .map(
-          (row) => Production(
-            id: row['id'] as int,
-            recipeId: row['recipeId'] as int,
-            recipeName: row['recipeName'] as String,
-            units: (row['units'] as num).toDouble(),
-            producedAt: _date(row['producedAt']),
-          ),
-        )
-        .toList();
-
-    productionList.sort((a, b) => b.producedAt.compareTo(a.producedAt));
+    final finishedProductUnits = allProducts.fold<double>(
+      0,
+      (sum, product) => sum + product.quantity,
+    );
 
     return DashboardSnapshot(
       salesTotal: salesTotal,
       expensesTotal: expensesTotal,
-      ingredientsCount: ingredients.length,
+      ingredientsCount: allIngredients.length,
       finishedProductUnits: finishedProductUnits,
-      recentProductions: productionList.take(10).toList(),
+      recentProductions: recentProductions.take(5).toList(),
       lowStock: lowStock,
     );
   }
