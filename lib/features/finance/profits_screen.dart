@@ -3,7 +3,6 @@ import 'package:intl/intl.dart';
 
 import '../../core/format.dart';
 import '../../core/theme/relatos_spacing.dart';
-import '../../core/widgets/app_list_tile.dart';
 import '../../data/relatos_scope.dart';
 
 class ProfitsScreen extends StatelessWidget {

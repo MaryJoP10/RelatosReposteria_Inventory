@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../core/widgets/feature_hub.dart';
-import '../inventory/products_screen.dart';
 import 'sales_screen.dart';
 
 class SalesHubScreen extends StatelessWidget {
