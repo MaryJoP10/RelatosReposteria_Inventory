@@ -56,10 +56,7 @@ class WebRelatosRepository implements RelatosRepository {
   }
 
   Future<void> _save() async {
-    await _prefs.setString(
-      _storageKey,
-      jsonEncode(_data),
-    );
+    await _prefs.setString(_storageKey, jsonEncode(_data));
   }
 
   List<Map<String, dynamic>> _list(String key) {
@@ -76,8 +73,7 @@ class WebRelatosRepository implements RelatosRepository {
   }
 
   int _nextId(String table) {
-    final nextIds =
-        Map<String, dynamic>.from(_data['next_ids'] as Map);
+    final nextIds = Map<String, dynamic>.from(_data['next_ids'] as Map);
 
     final id = (nextIds[table] as num?)?.toInt() ?? 1;
 
@@ -111,15 +107,11 @@ class WebRelatosRepository implements RelatosRepository {
   }
 
   @override
-  Future<Ingredient> upsertIngredient(
-    Ingredient ingredient,
-  ) async {
+  Future<Ingredient> upsertIngredient(Ingredient ingredient) async {
     final rows = _list('ingredients');
 
     if (ingredient.id == 0) {
-      final created = ingredient.copyWith(
-        id: _nextId('ingredients'),
-      );
+      final created = ingredient.copyWith(id: _nextId('ingredients'));
 
       rows.add({
         'id': created.id,
@@ -135,9 +127,7 @@ class WebRelatosRepository implements RelatosRepository {
       return created;
     }
 
-    final index = rows.indexWhere(
-      (row) => row['id'] == ingredient.id,
-    );
+    final index = rows.indexWhere((row) => row['id'] == ingredient.id);
 
     if (index >= 0) {
       rows[index] = {
@@ -190,15 +180,11 @@ class WebRelatosRepository implements RelatosRepository {
   }
 
   @override
-  Future<Product> upsertProduct(
-    Product product,
-  ) async {
+  Future<Product> upsertProduct(Product product) async {
     final rows = _list('products');
 
     if (product.id == 0) {
-      final created = product.copyWith(
-        id: _nextId('products'),
-      );
+      final created = product.copyWith(id: _nextId('products'));
 
       rows.add({
         'id': created.id,
@@ -214,9 +200,7 @@ class WebRelatosRepository implements RelatosRepository {
       return created;
     }
 
-    final index = rows.indexWhere(
-      (row) => row['id'] == product.id,
-    );
+    final index = rows.indexWhere((row) => row['id'] == product.id);
 
     if (index >= 0) {
       rows[index] = {
@@ -320,9 +304,7 @@ class WebRelatosRepository implements RelatosRepository {
   Future<void> deletePurchase(int id) async {
     final purchases = _list('purchases');
 
-    final index = purchases.indexWhere(
-      (row) => row['id'] == id,
-    );
+    final index = purchases.indexWhere((row) => row['id'] == id);
 
     if (index < 0) {
       return;
@@ -338,9 +320,8 @@ class WebRelatosRepository implements RelatosRepository {
 
     if (ingredientIndex >= 0) {
       ingredients[ingredientIndex]['quantity'] =
-          (ingredients[ingredientIndex]['quantity'] as num)
-                  .toDouble() -
-              (purchase['quantity'] as num).toDouble();
+          (ingredients[ingredientIndex]['quantity'] as num).toDouble() -
+          (purchase['quantity'] as num).toDouble();
     }
 
     purchases.removeAt(index);
@@ -376,8 +357,7 @@ class WebRelatosRepository implements RelatosRepository {
       return Recipe(
         id: recipeId,
         name: recipe['name'] as String,
-        yieldQuantity:
-            (recipe['yieldQuantity'] as num).toDouble(),
+        yieldQuantity: (recipe['yieldQuantity'] as num).toDouble(),
         yieldUnit: recipe['yieldUnit'] as String,
         lines: recipeLines,
         notes: recipe['notes'] as String?,
@@ -386,9 +366,7 @@ class WebRelatosRepository implements RelatosRepository {
   }
 
   @override
-  Future<Recipe> upsertRecipe(
-    Recipe recipe,
-  ) async {
+  Future<Recipe> upsertRecipe(Recipe recipe) async {
     final recipes = _list('recipes');
     final lines = _list('recipe_lines');
 
@@ -406,9 +384,7 @@ class WebRelatosRepository implements RelatosRepository {
       'notes': recipe.notes,
     };
 
-    final index = recipes.indexWhere(
-      (item) => item['id'] == recipeId,
-    );
+    final index = recipes.indexWhere((item) => item['id'] == recipeId);
 
     if (index >= 0) {
       recipes[index] = row;
@@ -416,9 +392,7 @@ class WebRelatosRepository implements RelatosRepository {
       recipes.add(row);
     }
 
-    lines.removeWhere(
-      (line) => line['recipeId'] == recipeId,
-    );
+    lines.removeWhere((line) => line['recipeId'] == recipeId);
 
     for (final line in recipe.lines) {
       lines.add({
@@ -488,9 +462,7 @@ class WebRelatosRepository implements RelatosRepository {
 
     final recipes = _list('recipes');
 
-    final recipeIndex = recipes.indexWhere(
-      (row) => row['id'] == recipeId,
-    );
+    final recipeIndex = recipes.indexWhere((row) => row['id'] == recipeId);
 
     if (recipeIndex < 0) {
       throw Exception('Receta no encontrada.');
@@ -515,17 +487,13 @@ class WebRelatosRepository implements RelatosRepository {
       );
 
       if (ingredientIndex < 0) {
-        throw Exception(
-          'No se encontró uno de los ingredientes de la receta.',
-        );
+        throw Exception('No se encontró uno de los ingredientes de la receta.');
       }
 
-      final requiredQuantity =
-          (line['quantity'] as num).toDouble() * batches;
+      final requiredQuantity = (line['quantity'] as num).toDouble() * batches;
 
       final availableQuantity =
-          (ingredients[ingredientIndex]['quantity'] as num)
-              .toDouble();
+          (ingredients[ingredientIndex]['quantity'] as num).toDouble();
 
       if (availableQuantity < requiredQuantity) {
         throw Exception(
@@ -542,20 +510,17 @@ class WebRelatosRepository implements RelatosRepository {
         (row) => row['id'] == ingredientId,
       );
 
-      final requiredQuantity =
-          (line['quantity'] as num).toDouble() * batches;
+      final requiredQuantity = (line['quantity'] as num).toDouble() * batches;
 
       ingredients[ingredientIndex]['quantity'] =
-          (ingredients[ingredientIndex]['quantity'] as num)
-                  .toDouble() -
-              requiredQuantity;
+          (ingredients[ingredientIndex]['quantity'] as num).toDouble() -
+          requiredQuantity;
     }
 
     final products = _list('products');
 
     final recipeName = recipe['name'] as String;
-    final yieldQuantity =
-        (recipe['yieldQuantity'] as num).toDouble();
+    final yieldQuantity = (recipe['yieldQuantity'] as num).toDouble();
 
     final unitsProduced = yieldQuantity * batches;
 
@@ -566,7 +531,7 @@ class WebRelatosRepository implements RelatosRepository {
     if (productIndex >= 0) {
       products[productIndex]['quantity'] =
           (products[productIndex]['quantity'] as num).toDouble() +
-              unitsProduced;
+          unitsProduced;
     } else {
       products.add({
         'id': _nextId('products'),
@@ -637,9 +602,7 @@ class WebRelatosRepository implements RelatosRepository {
 
     final products = _list('products');
 
-    final productIndex = products.indexWhere(
-      (row) => row['id'] == productId,
-    );
+    final productIndex = products.indexWhere((row) => row['id'] == productId);
 
     if (productIndex < 0) {
       throw Exception('Producto no encontrado.');
@@ -647,13 +610,10 @@ class WebRelatosRepository implements RelatosRepository {
 
     final product = products[productIndex];
 
-    final available =
-        (product['quantity'] as num).toDouble();
+    final available = (product['quantity'] as num).toDouble();
 
     if (available < quantity) {
-      throw Exception(
-        'No hay suficiente producto disponible.',
-      );
+      throw Exception('No hay suficiente producto disponible.');
     }
 
     product['quantity'] = available - quantity;
@@ -690,9 +650,7 @@ class WebRelatosRepository implements RelatosRepository {
   Future<void> deleteSale(int id) async {
     final sales = _list('sales');
 
-    final index = sales.indexWhere(
-      (row) => row['id'] == id,
-    );
+    final index = sales.indexWhere((row) => row['id'] == id);
 
     if (index < 0) {
       return;
@@ -709,7 +667,7 @@ class WebRelatosRepository implements RelatosRepository {
     if (productIndex >= 0) {
       products[productIndex]['quantity'] =
           (products[productIndex]['quantity'] as num).toDouble() +
-              (sale['quantity'] as num).toDouble();
+          (sale['quantity'] as num).toDouble();
     }
 
     sales.removeAt(index);
@@ -775,9 +733,7 @@ class WebRelatosRepository implements RelatosRepository {
   Future<void> deleteExpense(int id) async {
     final expenses = _list('expenses');
 
-    expenses.removeWhere(
-      (row) => row['id'] == id,
-    );
+    expenses.removeWhere((row) => row['id'] == id);
 
     _data['expenses'] = expenses;
 
@@ -792,26 +748,29 @@ class WebRelatosRepository implements RelatosRepository {
   Future<DashboardSnapshot> dashboard() async {
     final sales = _list('sales');
     final expenses = _list('expenses');
+    final purchases = _list('purchases');
     final ingredients = _list('ingredients');
     final products = _list('products');
     final productions = _list('productions');
 
     final salesTotal = sales.fold<double>(
       0,
-      (sum, row) =>
-          sum + (row['total'] as num).toDouble(),
+      (sum, row) => sum + (row['total'] as num).toDouble(),
     );
 
-    final expensesTotal = expenses.fold<double>(
-      0,
-      (sum, row) =>
-          sum + (row['amount'] as num).toDouble(),
-    );
+    final expensesTotal =
+        expenses.fold<double>(
+          0,
+          (sum, row) => sum + (row['amount'] as num).toDouble(),
+        ) +
+        purchases.fold<double>(
+          0,
+          (sum, row) => sum + (row['totalCost'] as num).toDouble(),
+        );
 
     final finishedProductUnits = products.fold<double>(
       0,
-      (sum, row) =>
-          sum + (row['quantity'] as num).toDouble(),
+      (sum, row) => sum + (row['quantity'] as num).toDouble(),
     );
 
     final lowStock = ingredients
@@ -821,8 +780,7 @@ class WebRelatosRepository implements RelatosRepository {
             name: row['name'] as String,
             unit: row['unit'] as String,
             quantity: (row['quantity'] as num).toDouble(),
-            minQuantity:
-                (row['minQuantity'] as num).toDouble(),
+            minQuantity: (row['minQuantity'] as num).toDouble(),
           ),
         )
         .where((ingredient) => ingredient.isLow)
@@ -840,9 +798,7 @@ class WebRelatosRepository implements RelatosRepository {
         )
         .toList();
 
-    productionList.sort(
-      (a, b) => b.producedAt.compareTo(a.producedAt),
-    );
+    productionList.sort((a, b) => b.producedAt.compareTo(a.producedAt));
 
     return DashboardSnapshot(
       salesTotal: salesTotal,
